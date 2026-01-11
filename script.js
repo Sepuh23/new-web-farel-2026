@@ -14,6 +14,10 @@ const toastMessage = document.querySelector('.toast-message');
 const downloadCvBtn = document.getElementById('downloadCv');
 const currentYear = document.getElementById('currentYear');
 
+// ===== GLOBAL VARIABLES =====
+let isModalOpen = false;
+let scrollPosition = 0;
+
 // ===== LOADING SCREEN =====
 window.addEventListener('load', () => {
     setTimeout(() => {
@@ -215,7 +219,9 @@ const projectData = {
             "Network monitoring with PRTG"
         ],
         technologies: ["Cisco", "VLAN", "OSPF", "ACL", "QoS"],
-        image: "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1074&q=80"
+        image: "images/project1.jpg",
+        github: "https://github.com/yourusername/network-project",
+        demo: "https://demo.yourportfolio.com/network-project"
     },
     2: {
         title: "Inventory Management System",
@@ -229,7 +235,9 @@ const projectData = {
             "Mobile-responsive design"
         ],
         technologies: ["PHP", "MySQL", "JavaScript", "Bootstrap", "QR Code"],
-        image: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1170&q=80"
+        image: "images/project2.jpg",
+        github: "https://github.com/yourusername/inventory-system",
+        demo: "https://demo.yourportfolio.com/inventory-system"
     },
     3: {
         title: "Network Security Audit",
@@ -243,7 +251,9 @@ const projectData = {
             "Staff security awareness training"
         ],
         technologies: ["Wireshark", "Nmap", "Metasploit", "OpenVAS", "Security"],
-        image: "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1170&q=80"
+        image: "images/project3.jpg",
+        github: "https://github.com/yourusername/security-audit",
+        demo: "https://demo.yourportfolio.com/security-audit"
     },
     4: {
         title: "Enterprise WiFi Setup",
@@ -257,7 +267,9 @@ const projectData = {
             "Bandwidth management and monitoring"
         ],
         technologies: ["MikroTik", "UniFi", "RADIUS", "WiFi", "Security"],
-        image: "https://images.unsplash.com/photo-1581094794329-c8112a89af12?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1170&q=80"
+        image: "images/project4.jpg",
+        github: "https://github.com/yourusername/wifi-setup",
+        demo: "https://demo.yourportfolio.com/wifi-setup"
     }
 };
 
@@ -274,41 +286,53 @@ projectViews.forEach(view => {
 });
 
 function showProjectModal(project) {
+    if (isModalOpen) return;
+    isModalOpen = true;
+    
+    // Save current scroll position
+    scrollPosition = window.pageYOffset;
+    
+    // Disable body scroll
+    document.body.style.overflow = 'hidden';
+    document.body.style.position = 'fixed';
+    document.body.style.top = `-${scrollPosition}px`;
+    document.body.style.width = '100%';
+    
     // Create modal HTML
     const modalHTML = `
         <div class="modal-overlay" id="modalOverlay">
             <div class="modal">
                 <div class="modal-header">
                     <h3>${project.title}</h3>
-                    <button class="modal-close">&times;</button>
+                    <button class="modal-close" id="modalClose">&times;</button>
                 </div>
                 <div class="modal-body">
                     <div class="modal-image">
-                        <img src="${project.image}" alt="${project.title}">
+                        <img src="${project.image}" alt="${project.title}" onerror="this.src='https://images.unsplash.com/photo-1558494949-ef010cbdcc31?ixlib=rb-4.0.3&auto=format&fit=crop&w=1074&q=80'">
                     </div>
                     <div class="modal-content">
                         <div class="modal-category">${project.category}</div>
                         <p class="modal-description">${project.description}</p>
                         
                         <div class="modal-section">
-                            <h4>Project Details</h4>
+                            <h4><i class="fas fa-list-check"></i> Project Details</h4>
                             <ul>
-                                ${project.details.map(detail => `<li>${detail}</li>`).join('')}
+                                ${project.details.map(detail => `<li><i class="fas fa-check"></i> ${detail}</li>`).join('')}
                             </ul>
                         </div>
                         
                         <div class="modal-section">
-                            <h4>Technologies Used</h4>
+                            <h4><i class="fas fa-code"></i> Technologies Used</h4>
                             <div class="modal-tech">
                                 ${project.technologies.map(tech => `<span>${tech}</span>`).join('')}
                             </div>
                         </div>
                         
                         <div class="modal-actions">
-                            <a href="#" class="btn btn-primary">
+                            <a href="${project.github}" target="_blank" class="btn btn-primary" id="githubBtn">
                                 <i class="fab fa-github"></i> View Code
                             </a>
-                            <a href="#" class="btn btn-outline">
+                            <a href="${project.demo}" target="_blank" class="btn btn-outline" id="demoBtn">
                                 <i class="fas fa-external-link-alt"></i> Live Demo
                             </a>
                         </div>
@@ -321,192 +345,353 @@ function showProjectModal(project) {
     // Add modal to page
     document.body.insertAdjacentHTML('beforeend', modalHTML);
     
-    // Add modal styles
-    const style = document.createElement('style');
-    style.textContent = `
-        .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.8);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 2000;
-            padding: 20px;
-            backdrop-filter: blur(5px);
-        }
-        
-        .modal {
-            background: var(--light);
-            border-radius: var(--radius-lg);
-            max-width: 800px;
-            max-height: 90vh;
-            overflow-y: auto;
-            box-shadow: var(--shadow-xl);
-            animation: modalSlideIn 0.3s ease;
-        }
-        
-        @keyframes modalSlideIn {
-            from {
-                opacity: 0;
-                transform: translateY(-50px);
+    // Add modal styles if not already added
+    if (!document.getElementById('modal-styles')) {
+        const style = document.createElement('style');
+        style.id = 'modal-styles';
+        style.textContent = `
+            .modal-overlay {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.9);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                z-index: 9999;
+                padding: 20px;
+                backdrop-filter: blur(5px);
+                animation: fadeIn 0.3s ease;
+                overflow-y: auto;
             }
-            to {
-                opacity: 1;
-                transform: translateY(0);
+            
+            @keyframes fadeIn {
+                from { opacity: 0; }
+                to { opacity: 1; }
             }
-        }
-        
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 20px 30px;
-            border-bottom: 1px solid var(--gray-light);
-        }
-        
-        .modal-header h3 {
-            font-size: 1.5rem;
-            color: var(--dark);
-        }
-        
-        .modal-close {
-            background: none;
-            border: none;
-            font-size: 2rem;
-            color: var(--gray);
-            cursor: pointer;
-            line-height: 1;
-            transition: var(--transition);
-        }
-        
-        .modal-close:hover {
-            color: var(--danger);
-        }
-        
-        .modal-body {
-            padding: 30px;
-        }
-        
-        .modal-image {
-            margin-bottom: 20px;
-            border-radius: var(--radius-md);
-            overflow: hidden;
-        }
-        
-        .modal-image img {
-            width: 100%;
-            height: 200px;
-            object-fit: cover;
-        }
-        
-        .modal-category {
-            display: inline-block;
-            padding: 6px 16px;
-            background: rgba(37, 99, 235, 0.1);
-            color: var(--primary);
-            border-radius: var(--radius-full);
-            font-size: 0.8rem;
-            font-weight: 500;
-            margin-bottom: 15px;
-        }
-        
-        .modal-description {
-            color: var(--gray);
-            margin-bottom: 25px;
-            line-height: 1.7;
-        }
-        
-        .modal-section {
-            margin-bottom: 25px;
-        }
-        
-        .modal-section h4 {
-            font-size: 1.1rem;
-            margin-bottom: 10px;
-            color: var(--dark);
-        }
-        
-        .modal-section ul {
-            list-style: none;
-            padding-left: 20px;
-        }
-        
-        .modal-section li {
-            color: var(--gray);
-            margin-bottom: 8px;
-            position: relative;
-        }
-        
-        .modal-section li::before {
-            content: '•';
-            color: var(--primary);
-            font-weight: bold;
-            position: absolute;
-            left: -15px;
-        }
-        
-        .modal-tech {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-        }
-        
-        .modal-tech span {
-            padding: 6px 12px;
-            background: var(--gray-light);
-            color: var(--gray);
-            border-radius: var(--radius-full);
-            font-size: 0.8rem;
-        }
-        
-        .modal-actions {
-            display: flex;
-            gap: 15px;
-            margin-top: 30px;
-        }
-        
-        @media (max-width: 768px) {
+            
             .modal {
-                max-width: 95%;
+                background: var(--light);
+                border-radius: var(--radius-lg);
+                max-width: 800px;
+                width: 100%;
+                max-height: 85vh;
+                overflow-y: auto;
+                box-shadow: var(--shadow-xl);
+                animation: modalSlideIn 0.3s ease;
+                position: relative;
+            }
+            
+            @keyframes modalSlideIn {
+                from {
+                    opacity: 0;
+                    transform: translateY(-50px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+            
+            .modal-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 20px 30px;
+                border-bottom: 1px solid var(--gray-light);
+                position: sticky;
+                top: 0;
+                background: var(--light);
+                z-index: 10;
+            }
+            
+            .modal-header h3 {
+                font-size: 1.5rem;
+                color: var(--dark);
+                margin: 0;
+            }
+            
+            .modal-close {
+                background: none;
+                border: none;
+                font-size: 2rem;
+                color: var(--gray);
+                cursor: pointer;
+                line-height: 1;
+                transition: var(--transition);
+                width: 40px;
+                height: 40px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                border-radius: 50%;
+            }
+            
+            .modal-close:hover {
+                color: var(--danger);
+                background: rgba(239, 68, 68, 0.1);
+            }
+            
+            .modal-body {
+                padding: 30px;
+            }
+            
+            .modal-image {
+                margin-bottom: 25px;
+                border-radius: var(--radius-md);
+                overflow: hidden;
+                height: 300px;
+            }
+            
+            .modal-image img {
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+                display: block;
+            }
+            
+            .modal-category {
+                display: inline-block;
+                padding: 6px 16px;
+                background: rgba(37, 99, 235, 0.1);
+                color: var(--primary);
+                border-radius: var(--radius-full);
+                font-size: 0.8rem;
+                font-weight: 500;
+                margin-bottom: 15px;
+            }
+            
+            .modal-description {
+                color: var(--gray);
+                margin-bottom: 25px;
+                line-height: 1.7;
+                font-size: 1rem;
+            }
+            
+            .modal-section {
+                margin-bottom: 25px;
+            }
+            
+            .modal-section h4 {
+                font-size: 1.1rem;
+                margin-bottom: 15px;
+                color: var(--dark);
+                display: flex;
+                align-items: center;
+                gap: 10px;
+            }
+            
+            .modal-section h4 i {
+                color: var(--primary);
+            }
+            
+            .modal-section ul {
+                list-style: none;
+                padding-left: 0;
+            }
+            
+            .modal-section li {
+                color: var(--gray);
+                margin-bottom: 12px;
+                padding-left: 25px;
+                position: relative;
+                line-height: 1.6;
+            }
+            
+            .modal-section li i {
+                position: absolute;
+                left: 0;
+                top: 5px;
+                color: var(--primary);
+                font-size: 0.9rem;
+            }
+            
+            .modal-tech {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 10px;
+            }
+            
+            .modal-tech span {
+                padding: 8px 16px;
+                background: var(--gray-light);
+                color: var(--dark);
+                border-radius: var(--radius-full);
+                font-size: 0.85rem;
+                font-weight: 500;
+                transition: var(--transition);
+            }
+            
+            .modal-tech span:hover {
+                background: var(--primary);
+                color: white;
+                transform: translateY(-2px);
             }
             
             .modal-actions {
-                flex-direction: column;
+                display: flex;
+                gap: 15px;
+                margin-top: 30px;
+                padding-top: 20px;
+                border-top: 1px solid var(--gray-light);
             }
-        }
-    `;
-    
-    document.head.appendChild(style);
+            
+            .modal-actions .btn {
+                flex: 1;
+                justify-content: center;
+            }
+            
+            @media (max-width: 768px) {
+                .modal {
+                    max-height: 90vh;
+                    margin: 10px;
+                }
+                
+                .modal-header {
+                    padding: 15px 20px;
+                }
+                
+                .modal-body {
+                    padding: 20px;
+                }
+                
+                .modal-image {
+                    height: 200px;
+                }
+                
+                .modal-actions {
+                    flex-direction: column;
+                }
+                
+                .modal-section li {
+                    padding-left: 22px;
+                    font-size: 0.95rem;
+                }
+            }
+            
+            @media (max-width: 480px) {
+                .modal-header h3 {
+                    font-size: 1.2rem;
+                }
+                
+                .modal-description {
+                    font-size: 0.95rem;
+                }
+                
+                .modal-tech span {
+                    padding: 6px 12px;
+                    font-size: 0.8rem;
+                }
+            }
+        `;
+        document.head.appendChild(style);
+    }
     
     // Add event listeners
     const modalOverlay = document.getElementById('modalOverlay');
-    const modalClose = document.querySelector('.modal-close');
+    const modalClose = document.getElementById('modalClose');
     
-    modalClose.addEventListener('click', () => {
-        modalOverlay.remove();
-        document.head.removeChild(style);
-    });
+    // Close modal function
+    function closeModal() {
+        if (!isModalOpen) return;
+        
+        modalOverlay.style.animation = 'fadeOut 0.3s ease';
+        modalOverlay.querySelector('.modal').style.animation = 'modalSlideOut 0.3s ease';
+        
+        setTimeout(() => {
+            modalOverlay.remove();
+            
+            // Re-enable body scroll
+            document.body.style.overflow = '';
+            document.body.style.position = '';
+            document.body.style.top = '';
+            document.body.style.width = '';
+            
+            // Restore scroll position
+            window.scrollTo(0, scrollPosition);
+            
+            isModalOpen = false;
+            
+            // Remove modal styles if no modals are open
+            if (!document.querySelector('.modal-overlay')) {
+                const modalStyles = document.getElementById('modal-styles');
+                if (modalStyles) {
+                    modalStyles.remove();
+                }
+            }
+        }, 250);
+    }
     
+    // Add close animation styles
+    const closeStyle = document.createElement('style');
+    closeStyle.textContent = `
+        @keyframes fadeOut {
+            from { opacity: 1; }
+            to { opacity: 0; }
+        }
+        
+        @keyframes modalSlideOut {
+            from {
+                opacity: 1;
+                transform: translateY(0);
+            }
+            to {
+                opacity: 0;
+                transform: translateY(-50px);
+            }
+        }
+    `;
+    document.head.appendChild(closeStyle);
+    
+    // Close modal on X button click
+    modalClose.addEventListener('click', closeModal);
+    
+    // Close modal on overlay click
     modalOverlay.addEventListener('click', (e) => {
         if (e.target === modalOverlay) {
-            modalOverlay.remove();
-            document.head.removeChild(style);
+            closeModal();
         }
     });
     
-    // Prevent body scroll
-    document.body.style.overflow = 'hidden';
-    
-    // Restore body scroll when modal closes
-    modalOverlay.addEventListener('transitionend', () => {
-        if (!document.body.contains(modalOverlay)) {
-            document.body.style.overflow = 'auto';
+    // Close modal on Escape key
+    document.addEventListener('keydown', function closeOnEscape(e) {
+        if (e.key === 'Escape' && isModalOpen) {
+            closeModal();
+            document.removeEventListener('keydown', closeOnEscape);
         }
     });
+    
+    // Prevent modal close on modal content click
+    modalOverlay.querySelector('.modal').addEventListener('click', (e) => {
+        e.stopPropagation();
+    });
+    
+    // Handle demo button click
+    const demoBtn = document.getElementById('demoBtn');
+    const githubBtn = document.getElementById('githubBtn');
+    
+    demoBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        showToast('Opening live demo in new tab...');
+        setTimeout(() => {
+            window.open(project.demo, '_blank');
+        }, 500);
+    });
+    
+    githubBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        showToast('Opening GitHub repository...');
+        setTimeout(() => {
+            window.open(project.github, '_blank');
+        }, 500);
+    });
+    
+    // Remove close style after animation
+    setTimeout(() => {
+        closeStyle.remove();
+    }, 300);
 }
 
 // ===== CONTACT FORM =====
@@ -514,23 +699,31 @@ contactForm.addEventListener('submit', (e) => {
     e.preventDefault();
     
     // Get form values
-    const formData = new FormData(contactForm);
-    const data = Object.fromEntries(formData);
+    const name = contactForm.querySelector('input[type="text"]').value;
+    const email = contactForm.querySelector('input[type="email"]').value;
+    const subject = contactForm.querySelector('input[placeholder="Subject"]').value;
+    const message = contactForm.querySelector('textarea').value;
+    
+    // Simple validation
+    if (!name || !email || !subject || !message) {
+        showToast('Please fill in all fields', 'error');
+        return;
+    }
     
     // Simulate form submission
-    showToast('Message sent successfully! I will get back to you soon.');
+    showToast(`Thank you ${name}! Your message has been sent. I'll get back to you soon.`, 'success');
     
     // Reset form
     contactForm.reset();
     
     // In a real application, you would send data to a server here
-    console.log('Form submitted:', data);
+    console.log('Form submitted:', { name, email, subject, message });
 });
 
 // ===== DOWNLOAD CV =====
 downloadCvBtn.addEventListener('click', (e) => {
     e.preventDefault();
-    showToast('Downloading CV...');
+    showToast('Downloading CV...', 'info');
     
     // Simulate download
     setTimeout(() => {
@@ -545,12 +738,115 @@ downloadCvBtn.addEventListener('click', (e) => {
 });
 
 // ===== TOAST NOTIFICATION =====
-function showToast(message) {
-    toastMessage.textContent = message;
-    toast.classList.add('show');
+function showToast(message, type = 'success') {
+    // Remove existing toast if any
+    const existingToast = document.querySelector('.toast');
+    if (existingToast) {
+        existingToast.remove();
+    }
     
+    // Create new toast
+    const toast = document.createElement('div');
+    toast.className = 'toast';
+    toast.innerHTML = `
+        <div class="toast-content">
+            <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'}"></i>
+            <span class="toast-message">${message}</span>
+        </div>
+    `;
+    
+    // Add toast styles if not already added
+    if (!document.getElementById('toast-styles')) {
+        const style = document.createElement('style');
+        style.id = 'toast-styles';
+        style.textContent = `
+            .toast {
+                position: fixed;
+                bottom: 30px;
+                left: 30px;
+                background: var(--light);
+                padding: 15px 25px;
+                border-radius: var(--radius-md);
+                box-shadow: var(--shadow-lg);
+                display: flex;
+                align-items: center;
+                gap: 15px;
+                transform: translateX(-150%);
+                transition: transform 0.3s ease;
+                z-index: 1000;
+                max-width: 400px;
+                animation: toastSlideIn 0.3s ease forwards;
+            }
+            
+            @keyframes toastSlideIn {
+                from { transform: translateX(-150%); }
+                to { transform: translateX(0); }
+            }
+            
+            [data-theme="dark"] .toast {
+                background: var(--gray-dark);
+            }
+            
+            .toast.show {
+                transform: translateX(0);
+            }
+            
+            .toast-content {
+                display: flex;
+                align-items: center;
+                gap: 15px;
+            }
+            
+            .toast-content i {
+                color: ${type === 'success' ? 'var(--success)' : type === 'error' ? 'var(--danger)' : 'var(--warning)'};
+                font-size: 1.2rem;
+            }
+            
+            .toast-message {
+                font-weight: 500;
+                color: var(--dark);
+                font-size: 0.95rem;
+            }
+            
+            @media (max-width: 768px) {
+                .toast {
+                    left: 20px;
+                    right: 20px;
+                    bottom: 20px;
+                    max-width: none;
+                }
+            }
+        `;
+        document.head.appendChild(style);
+    }
+    
+    document.body.appendChild(toast);
+    
+    // Remove toast after 3 seconds
     setTimeout(() => {
-        toast.classList.remove('show');
+        toast.style.animation = 'toastSlideOut 0.3s ease forwards';
+        
+        const slideOutStyle = document.createElement('style');
+        slideOutStyle.textContent = `
+            @keyframes toastSlideOut {
+                from { transform: translateX(0); opacity: 1; }
+                to { transform: translateX(-150%); opacity: 0; }
+            }
+        `;
+        document.head.appendChild(slideOutStyle);
+        
+        setTimeout(() => {
+            toast.remove();
+            slideOutStyle.remove();
+            
+            // Remove toast styles if no toasts are showing
+            if (!document.querySelector('.toast')) {
+                const toastStyles = document.getElementById('toast-styles');
+                if (toastStyles) {
+                    toastStyles.remove();
+                }
+            }
+        }, 300);
     }, 3000);
 }
 
@@ -601,6 +897,7 @@ document.addEventListener('DOMContentLoaded', () => {
             tooltip.style.fontSize = '0.8rem';
             tooltip.style.zIndex = '1000';
             tooltip.style.whiteSpace = 'nowrap';
+            tooltip.style.pointerEvents = 'none';
             
             el._tooltip = tooltip;
         });
@@ -612,6 +909,34 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     });
+    
+    // Add social link handlers
+    document.querySelectorAll('.social-icon').forEach(icon => {
+        icon.addEventListener('click', (e) => {
+            e.preventDefault();
+            const platform = icon.getAttribute('title');
+            showToast(`Opening ${platform}...`, 'info');
+            
+            // Simulate opening social media
+            setTimeout(() => {
+                window.open(icon.href, '_blank');
+            }, 500);
+        });
+    });
+    
+    // Add newsletter form handler
+    const newsletterForm = document.querySelector('.newsletter-form');
+    if (newsletterForm) {
+        newsletterForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const email = newsletterForm.querySelector('input[type="email"]').value;
+            
+            if (email) {
+                showToast('Thanks for subscribing!', 'success');
+                newsletterForm.reset();
+            }
+        });
+    }
 });
 
 // ===== TYPING EFFECT FOR HERO =====
@@ -623,6 +948,8 @@ let isDeleting = false;
 let isPaused = false;
 
 function typeEffect() {
+    if (!heroTitle) return;
+    
     const currentTitle = titles[titleIndex];
     
     if (isDeleting) {
@@ -648,5 +975,39 @@ function typeEffect() {
     setTimeout(typeEffect, speed);
 }
 
-// Start typing effect
-setTimeout(typeEffect, 1000);
+// Start typing effect after page loads
+setTimeout(() => {
+    if (heroTitle) {
+        typeEffect();
+    }
+}, 1000);
+
+// ===== SMOOTH SCROLL FOR ANCHOR LINKS =====
+document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+    anchor.addEventListener('click', function(e) {
+        e.preventDefault();
+        
+        const targetId = this.getAttribute('href');
+        if (targetId === '#') return;
+        
+        const targetElement = document.querySelector(targetId);
+        if (targetElement) {
+            // Close mobile menu if open
+            if (navMenu.classList.contains('active')) {
+                navMenu.classList.remove('active');
+                menuToggle.classList.remove('active');
+                menuToggle.querySelector('i').className = 'fas fa-bars';
+            }
+            
+            // Calculate scroll position
+            const headerHeight = document.querySelector('.navbar').offsetHeight;
+            const targetPosition = targetElement.offsetTop - headerHeight;
+            
+            // Smooth scroll
+            window.scrollTo({
+                top: targetPosition,
+                behavior: 'smooth'
+            });
+        }
+    });
+});
