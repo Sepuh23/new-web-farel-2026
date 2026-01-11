@@ -1629,4 +1629,35 @@ h1, h2, h3, h4, h5, h6 {
     .image-container img {
         height: 400px;
     }
+}/* ===== ADDITIONAL STYLES FOR MODAL ===== */
+/* Already included in the modal styles in script.js */
+
+/* ===== PREVENT BODY SCROLL WHEN MODAL IS OPEN ===== */
+body.modal-open {
+    overflow: hidden;
+    position: fixed;
+    width: 100%;
+    height: 100%;
+}
+
+/* ===== TOAST STYLES ===== */
+/* Already included in the toast styles in script.js */
+
+/* ===== TOOLTIP STYLES ===== */
+.tooltip {
+    position: fixed;
+    background: var(--dark);
+    color: white;
+    padding: 6px 12px;
+    border-radius: var(--radius-sm);
+    font-size: 0.8rem;
+    z-index: 1000;
+    white-space: nowrap;
+    pointer-events: none;
+    box-shadow: var(--shadow-md);
+}
+
+[data-theme="dark"] .tooltip {
+    background: white;
+    color: var(--dark);
 }
